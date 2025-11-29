@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="id">
+ <head>
+  <meta charset="UTF-8">
+  <title>PAI Interaktif - Berpikir Kritis &amp; Cinta IPTEK</title><!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script><!-- Canva SDKs -->
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+  </style>
+  <script>
+    // Default konfigurasi untuk elemen Canva
+    const defaultConfig = {
+      // Warna (maksimal 5, sudah diurutkan dari paling dominan)
+      background_color: "#0f172a",     // BACKGROUND - biru tua kehitaman
+      surface_color: "#1e293b",        // SECONDARY_SURFACE - panel/kartu
+      text_color: "#e5e7eb",           // TEXT - abu muda
+      primary_action_color: "#22c55e", // PRIMARY_ACTION - hijau cerah
+      secondary_action_color: "#38bdf8", // SECONDARY_ACTION - biru terang
+
+      // Font
+      font_family: "Poppins",
+      font_size: 16,
+
+      // Teks yang bisa diedit dari Edit Panel
+      main_title: "Membiasakan Berpikir Kritis & Semangat Mencintai IPTEK",
+      subtitle: "Pendidikan Agama Islam | Kelas XI SMK",
+      section_intro_title: "Pendahuluan",
+      section_intro_body: "Sebagai muslim, kita diperintahkan untuk menggunakan akal secara maksimal, berpikir kritis, dan memanfaatkan ilmu pengetahuan dan teknologi (IPTEK) untuk kemaslahatan.",
+      section_think_title: "Apa Itu Berpikir Kritis dalam Islam?",
+      section_iptek_title: "Semangat Mencintai IPTEK",
+      quiz_title: "Kuis Interaktif",
+      summary_title: "Rangkuman & Refleksi",
+      footer_text: "PAI Kelas XI SMK • Materi: Berpikir Kritis & Cinta IPTEK"
+    };
+
+    // Simpan referensi elemen DOM global untuk dipakai di onConfigChange
+    let domRefs = {};
+
+    // Inisialisasi setelah DOM siap
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ambil referensi elemen penting
+      domRefs = {
+        appWrapper: document.getElementById("app-wrapper"),
+        mainTitle: document.getElementById("main-title"),
+        subtitle: document.getElementById("subtitle"),
+        sectionIntroTitle: document.getElementById("section-intro-title"),
+        sectionIntroBody: document.getElementById("section-intro-body"),
+        sectionThinkTitle: document.getElementById("section-think-title"),
+        sectionIptekTitle: document.getElementById("section-iptek-title"),
+        quizTitle: document.getElementById("quiz-title"),
+        summaryTitle: document.getElementById("summary-title"),
+        footerText: document.getElementById("footer-text"),
+        // kartu/panel
+        introCard: document.getElementById("intro-card"),
+        thinkCard: document.getElementById("think-card"),
+        iptekCard: document.getElementById("iptek-card"),
+        quizCard: document.getElementById("quiz-card"),
+        summaryCard: document.getElementById("summary-card"),
+        // tombol
+        navButtons: document.querySelectorAll("[data-nav]"),
+        primaryButtons: document.querySelectorAll("[data-btn='primary']"),
+        secondaryButtons: document.querySelectorAll("[data-btn='secondary']")
+      };
+
+      // Logika tab navigasi sederhana
+      const tabs = document.querySelectorAll("[data-tab-target]");
+      const sections = document.querySelectorAll("[data-tab-section]");
+      tabs.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.getAttribute("data-tab-target");
+          tabs.forEach((b) => b.classList.remove("border-b-2", "border-emerald-400", "text-emerald-300"));
+          btn.classList.add("border-b-2", "border-emerald-400", "text-emerald-300");
+          sections.forEach((sec) => {
+            if (sec.getAttribute("data-tab-section") === target) {
+              sec.classList.remove("hidden");
+            } else {
+              sec.classList.add("hidden");
+            }
+          });
+        });
+      });
+
+      // Logika kuis
+      initQuiz();
+
+      // Inisialisasi Element SDK bila tersedia
+      if (window.elementSdk && typeof window.elementSdk.init === "function") {
+        window.elementSdk.init({
+          defaultConfig,
+          onConfigChange: async (config) => {
+            applyConfigToUI(config);
+          },
+          mapToCapabilities: (config) => {
+            const cfg = config || defaultConfig;
+
+            const backgroundRecolorable = {
+              get: () => cfg.background_color || defaultConfig.background_color,
+              set: (value) => {
+                cfg.background_color = value;
+                window.elementSdk.setConfig({ background_color: value });
+              }
+            };
+
+            const surfaceRecolorable = {
+              get: () => cfg.surface_color || defaultConfig.surface_color,
+              set: (value) => {
+                cfg.surface_color = value;
+                window.elementSdk.setConfig({ surface_color: value });
+              }
+            };
+
+            const textRecolorable = {
+              get: () => cfg.text_color || defaultConfig.text_color,
+              set: (value) => {
+                cfg.text_color = value;
+                window.elementSdk.setConfig({ text_color: value });
+              }
+            };
+
+            const primaryActionRecolorable = {
+              get: () => cfg.primary_action_color || defaultConfig.primary_action_color,
+              set: (value) => {
+                cfg.primary_action_color = value;
+                window.elementSdk.setConfig({ primary_action_color: value });
+              }
+            };
+
+            const secondaryActionRecolorable = {
+              get: () => cfg.secondary_action_color || defaultConfig.secondary_action_color,
+              set: (value) => {
+                cfg.secondary_action_color = value;
+                window.elementSdk.setConfig({ secondary_action_color: value });
+              }
+            };
+
+            const fontEditable = {
+              get: () => cfg.font_family || defaultConfig.font_family,
+              set: (value) => {
+                cfg.font_family = value;
+                window.elementSdk.setConfig({ font_family: value });
+              }
+            };
+
+            const fontSizeable = {
+              get: () => cfg.font_size || defaultConfig.font_size,
+              set: (value) => {
+                cfg.font_size = value;
+                window.elementSdk.setConfig({ font_size: value });
+              }
+            };
+
+            return {
+              recolorables: [
+                backgroundRecolorable,
+                surfaceRecolorable,
+                textRecolorable,
+                primaryActionRecolorable,
+                secondaryActionRecolorable
+              ],
+              borderables: [],
+              fontEditable,
+              fontSizeable
+            };
+          },
+          mapToEditPanelValues: (config) => {
+            const cfg = config || defaultConfig;
+            return new Map([
+              ["main_title", cfg.main_title || defaultConfig.main_title],
+              ["subtitle", cfg.subtitle || defaultConfig.subtitle],
+              ["section_intro_title", cfg.section_intro_title || defaultConfig.section_intro_title],
+              ["section_intro_body", cfg.section_intro_body || defaultConfig.section_intro_body],
+              ["section_think_title", cfg.section_think_title || defaultConfig.section_think_title],
+              ["section_iptek_title", cfg.section_iptek_title || defaultConfig.section_iptek_title],
+              ["quiz_title", cfg.quiz_title || defaultConfig.quiz_title],
+              ["summary_title", cfg.summary_title || defaultConfig.summary_title],
+              ["footer_text", cfg.footer_text || defaultConfig.footer_text]
+            ]);
+          }
+        });
+      }
+
+      // Terapkan defaultConfig bila SDK tidak ada (misalnya preview)
+      applyConfigToUI(defaultConfig);
+    });
+
+    function applyConfigToUI(config) {
+      if (!domRefs || !domRefs.appWrapper) return;
+      const cfg = config || defaultConfig;
+
+      const bgColor = cfg.background_color || defaultConfig.background_color;
+      const surfaceColor = cfg.surface_color || defaultConfig.surface_color;
+      const textColor = cfg.text_color || defaultConfig.text_color;
+      const primaryColor = cfg.primary_action_color || defaultConfig.primary_action_color;
+      const secondaryColor = cfg.secondary_action_color || defaultConfig.secondary_action_color;
+      const fontFamily = cfg.font_family || defaultConfig.font_family;
+      const baseFontSize = cfg.font_size || defaultConfig.font_size;
+
+      // Background umum
+      domRefs.appWrapper.style.backgroundColor = bgColor;
+      domRefs.appWrapper.style.color = textColor;
+      domRefs.appWrapper.style.fontFamily = `${fontFamily}, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+      domRefs.appWrapper.style.fontSize = baseFontSize + "px";
+
+      // Skala font sesuai hirarki
+      if (domRefs.mainTitle) {
+        domRefs.mainTitle.textContent = cfg.main_title || defaultConfig.main_title;
+        domRefs.mainTitle.style.fontSize = baseFontSize * 1.9 + "px";
+        domRefs.mainTitle.style.color = textColor;
+      }
+      if (domRefs.subtitle) {
+        domRefs.subtitle.textContent = cfg.subtitle || defaultConfig.subtitle;
+        domRefs.subtitle.style.fontSize = baseFontSize * 1.1 + "px";
+        domRefs.subtitle.style.color = textColor;
+      }
+
+      if (domRefs.sectionIntroTitle) {
+        domRefs.sectionIntroTitle.textContent = cfg.section_intro_title || defaultConfig.section_intro_title;
+        domRefs.sectionIntroTitle.style.fontSize = baseFontSize * 1.3 + "px";
+      }
+      if (domRefs.sectionIntroBody) {
+        domRefs.sectionIntroBody.textContent = cfg.section_intro_body || defaultConfig.section_intro_body;
+        domRefs.sectionIntroBody.style.fontSize = baseFontSize * 1.0 + "px";
+      }
+      if (domRefs.sectionThinkTitle) {
+        domRefs.sectionThinkTitle.textContent = cfg.section_think_title || defaultConfig.section_think_title;
+        domRefs.sectionThinkTitle.style.fontSize = baseFontSize * 1.3 + "px";
+      }
+      if (domRefs.sectionIptekTitle) {
+        domRefs.sectionIptekTitle.textContent = cfg.section_iptek_title || defaultConfig.section_iptek_title;
+        domRefs.sectionIptekTitle.style.fontSize = baseFontSize * 1.3 + "px";
+      }
+      if (domRefs.quizTitle) {
+        domRefs.quizTitle.textContent = cfg.quiz_title || defaultConfig.quiz_title;
+        domRefs.quizTitle.style.fontSize = baseFontSize * 1.3 + "px";
+      }
+      if (domRefs.summaryTitle) {
+        domRefs.summaryTitle.textContent = cfg.summary_title || defaultConfig.summary_title;
+        domRefs.summaryTitle.style.fontSize = baseFontSize * 1.3 + "px";
+      }
+      if (domRefs.footerText) {
+        domRefs.footerText.textContent = cfg.footer_text || defaultConfig.footer_text;
+        domRefs.footerText.style.fontSize = baseFontSize * 0.9 + "px";
+      }
+
+      // Warna kartu/panel
+      [
+        domRefs.introCard,
+        domRefs.thinkCard,
+        domRefs.iptekCard,
+        domRefs.quizCard,
+        domRefs.summaryCard
+      ].forEach((card) => {
+        if (card) {
+          card.style.backgroundColor = surfaceColor;
+          card.style.borderColor = "#0f172a";
+        }
+      });
+
+      // Tombol utama
+      domRefs.primaryButtons.forEach((btn) => {
+        btn.style.backgroundColor = primaryColor;
+        btn.style.color = "#0b1120";
+      });
+
+      // Tombol sekunder
+      domRefs.secondaryButtons.forEach((btn) => {
+        btn.style.borderColor = secondaryColor;
+        btn.style.color = secondaryColor;
+      });
+
+      // Tab teks warna
+      const tabButtons = document.querySelectorAll("[data-tab-target]");
+      tabButtons.forEach((tab) => {
+        tab.style.color = textColor;
+      });
+
+      // Ring aksen
+      const accentRings = document.querySelectorAll(".accent-ring");
+      accentRings.forEach((el) => {
+        el.style.borderColor = secondaryColor;
+      });
+    }
+
+    // ----- KUIS SEDERHANA -----
+    function initQuiz() {
+      const quizForm = document.getElementById("quiz-form");
+      const quizResult = document.getElementById("quiz-result");
+      const quizSummary = document.getElementById("quiz-summary");
+      if (!quizForm || !quizResult || !quizSummary) return;
+
+      quizForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const answers = {
+          q1: "b",
+          q2: "a",
+          q3: "c",
+          q4: "b"
+        };
+
+        let score = 0;
+        let total = 4;
+        const feedbacks = [];
+
+        Object.keys(answers).forEach((key) => {
+          const selected = quizForm.querySelector(`input[name="${key}"]:checked`);
+          if (selected && selected.value === answers[key]) {
+            score++;
+          } else {
+            // feedback singkat
+            if (key === "q1") {
+              feedbacks.push("Soal 1: Berpikir kritis dalam Islam selalu disandarkan pada Al-Qur'an dan Sunnah.");
+            } else if (key === "q2") {
+              feedbacks.push("Soal 2: IPTEK bernilai ibadah bila diniatkan untuk mencari ridha Allah dan kemaslahatan.");
+            } else if (key === "q3") {
+              feedbacks.push("Soal 3: Sikap kritis bukan berarti suka membantah, tetapi menganalisa dengan sopan dan ilmiah.");
+            } else if (key === "q4") {
+              feedbacks.push("Soal 4: Semangat mencintai IPTEK diwujudkan dengan belajar sungguh-sungguh dan berkarya.");
+            }
+          }
+        });
+
+        quizResult.innerHTML = "";
+        quizSummary.innerHTML = "";
+
+        const percentage = (score / total) * 100;
+        let pesan = "";
+        if (percentage === 100) {
+          pesan = "Masya Allah, jawabanmu sempurna! Pemahamanmu tentang berpikir kritis dan cinta IPTEK sangat baik.";
+        } else if (percentage >= 75) {
+          pesan = "Bagus! Tinggal sedikit lagi untuk benar-benar menguasai materi ini.";
+        } else if (percentage >= 50) {
+          pesan = "Cukup baik. Coba baca kembali materi, terutama bagian yang masih keliru.";
+        } else {
+          pesan = "Ayo semangat! Tidak apa-apa salah, yang penting mau belajar lagi.";
+        }
+
+        const scoreDiv = document.createElement("div");
+        scoreDiv.className = "mb-2 font-semibold";
+        scoreDiv.textContent = `Nilai Kamu: ${score} dari ${total} (≈ ${Math.round(percentage)}%)`;
+        quizResult.appendChild(scoreDiv);
+
+        const messageDiv = document.createElement("div");
+        messageDiv.className = "mb-2";
+        messageDiv.textContent = pesan;
+        quizResult.appendChild(messageDiv);
+
+        if (feedbacks.length > 0) {
+          const list = document.createElement("ul");
+          list.className = "list-disc list-inside space-y-1 text-slate-200";
+          feedbacks.forEach((fb) => {
+            const li = document.createElement("li");
+            li.textContent = fb;
+            list.appendChild(li);
+          });
+          quizSummary.appendChild(list);
+        } else {
+          const ok = document.createElement("p");
+          ok.textContent = "Semua jawabanmu sudah tepat. Pertahankan semangat belajarmu!";
+          quizSummary.appendChild(ok);
+        }
+      });
+    }
+  </script>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="w-full h-full m-0 p-0">
+  <div id="app-wrapper" class="w-full h-full min-h-full flex flex-col items-stretch justify-start px-4 py-4">
+   <header class="w-full max-w-5xl mx-auto mb-4">
+    <div class="flex flex-col gap-2">
+     <div class="flex items-center gap-3"><!-- Ikon buku & lampu (SVG) -->
+      <div class="accent-ring rounded-full border-2 p-2 flex items-center justify-center">
+       <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-emerald-400" viewbox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 4.5C7 3.12 8.12 2 9.5 2h5A2.5 2.5 0 0 1 17 4.5V20a1 1 0 0 1-1.447.894L12 19l-3.553 1.894A1 1 0 0 1 7 20V4.5Z" stroke="currentColor" stroke-width="1.5" /> <path d="M10 7h4M10 10h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+       </svg>
+      </div>
+      <div>
+       <h1 id="main-title" class="font-semibold tracking-tight text-slate-50">Membiasakan Berpikir Kritis &amp; Semangat Mencintai IPTEK</h1>
+       <p id="subtitle" class="text-sm text-slate-300">Pendidikan Agama Islam | Kelas XI SMK</p>
+      </div>
+     </div><!-- Navigasi tab -->
+     <nav class="mt-4" aria-label="Navigasi materi">
+      <div class="flex flex-wrap gap-2 text-sm"><button type="button" data-tab-target="intro" class="px-3 py-1.5 rounded-md border-b-2 border-emerald-400 text-emerald-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"> Pendahuluan </button> <button type="button" data-tab-target="think" class="px-3 py-1.5 rounded-md border-b-2 border-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"> Berpikir Kritis </button> <button type="button" data-tab-target="iptek" class="px-3 py-1.5 rounded-md border-b-2 border-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"> Cinta IPTEK </button> <button type="button" data-tab-target="quiz" class="px-3 py-1.5 rounded-md border-b-2 border-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"> Kuis </button> <button type="button" data-tab-target="summary" class="px-3 py-1.5 rounded-md border-b-2 border-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"> Rangkuman </button>
+      </div>
+     </nav>
+    </div>
+   </header>
+   <main class="w-full max-w-5xl mx-auto flex-1 flex flex-col gap-4"><!-- SECTION: PENDAHULUAN -->
+    <section data-tab-section="intro" class="w-full" aria-labelledby="section-intro-title">
+     <div id="intro-card" class="w-full rounded-2xl border border-slate-900 shadow-lg px-6 py-5 flex flex-col gap-4">
+      <div class="flex flex-col md:flex-row gap-4 md:items-center"><!-- Ilustrasi lampu ide -->
+       <div class="w-24 h-24 rounded-2xl bg-slate-900/60 flex items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-14 h-14 text-amber-300" viewbox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 21h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /> <path d="M10 17h4v1a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-1Z" stroke="currentColor" stroke-width="1.5" /> <path d="M7 10a5 5 0 1 1 10 0c0 2.485-1.5 3.5-2.25 4.5-.4.54-.75 1-.75 1.5h-4c0-.5-.35-.96-.75-1.5C8.5 13.5 7 12.485 7 10Z" stroke="currentColor" stroke-width="1.5" />
+        </svg>
+       </div>
+       <div class="flex-1">
+        <h2 id="section-intro-title" class="text-lg font-semibold text-slate-50 mb-1">Pendahuluan</h2>
+        <p id="section-intro-body" class="text-sm text-slate-200 leading-relaxed">Sebagai muslim, kita diperintahkan untuk menggunakan akal secara maksimal, berpikir kritis, dan memanfaatkan ilmu pengetahuan dan teknologi (IPTEK) untuk kemaslahatan.</p>
+       </div>
+      </div>
+      <div class="grid md:grid-cols-3 gap-4 text-sm text-slate-100">
+       <div class="space-y-2">
+        <h3 class="font-semibold text-emerald-300">Tujuan Pembelajaran</h3>
+        <ul class="list-disc list-inside space-y-1">
+         <li>Memahami makna berpikir kritis dalam perspektif Islam.</li>
+         <li>Menyadari pentingnya IPTEK sebagai sarana ibadah.</li>
+         <li>Mampu memberi contoh sikap kritis dan cinta IPTEK di sekolah.</li>
+        </ul>
+       </div>
+       <div class="space-y-2">
+        <h3 class="font-semibold text-emerald-300">Ayat Terkait</h3>
+        <p class="text-xs leading-relaxed">Banyak ayat Al-Qur'an yang memerintahkan kita untuk berpikir, seperti: <span class="italic">“Afala ta'qilun?”</span> (Apakah kamu tidak berakal?). Ini menunjukkan pentingnya mengoptimalkan akal dalam kehidupan.</p>
+       </div>
+       <div class="space-y-2">
+        <h3 class="font-semibold text-emerald-300">Aktivitas Singkat</h3>
+        <p class="text-xs leading-relaxed">Coba perhatikan teknologi yang ada di sekitarmu (HP, internet, mesin, dsb). Renungkan: bagaimana jika semua itu digunakan untuk kebaikan? Bagaimana jika disalahgunakan?</p>
+       </div>
+      </div>
+     </div>
+    </section><!-- SECTION: BERPIKIR KRITIS -->
+    <section data-tab-section="think" class="w-full hidden" aria-labelledby="section-think-title">
+     <div id="think-card" class="w-full rounded-2xl border border-slate-900 shadow-lg px-6 py-5 flex flex-col gap-4">
+      <div class="flex flex-col md:flex-row gap-4 md:items-start">
+       <div class="flex-1">
+        <h2 id="section-think-title" class="text-lg font-semibold text-slate-50 mb-2">Apa Itu Berpikir Kritis dalam Islam?</h2>
+        <p class="text-sm text-slate-200 leading-relaxed mb-3">Berpikir kritis adalah kemampuan menganalisa, menilai, dan mengambil keputusan secara tepat berdasarkan data dan dalil yang kuat. Dalam Islam, berpikir kritis tidak lepas dari:</p>
+        <ul class="list-disc list-inside space-y-1 text-sm text-slate-100">
+         <li>Berpegang pada Al-Qur’an dan Sunnah sebagai sumber kebenaran utama.</li>
+         <li>Menggunakan akal sehat untuk memahami tanda-tanda kebesaran Allah.</li>
+         <li>Memilah informasi, tidak mudah percaya hoaks atau berita palsu.</li>
+         <li>Bersikap terbuka terhadap masukan, tetapi tetap selektif.</li>
+        </ul>
+       </div>
+       <aside class="w-full md:w-56 rounded-xl bg-slate-900/60 p-3 text-xs text-slate-100 space-y-2">
+        <h3 class="font-semibold text-emerald-300">Ciri Berpikir Kritis</h3>
+        <ul class="list-disc list-inside space-y-1">
+         <li>Bertanya “mengapa” dan “bagaimana”.</li>
+         <li>Mencari dalil dan sumber terpercaya.</li>
+         <li>Tidak ikut-ikutan tanpa ilmu.</li>
+         <li>Mampu menjelaskan alasan dari pendapatnya.</li>
+        </ul>
+        <p class="mt-2">Contoh: sebelum menyebar informasi di media sosial, seorang muslim akan mengecek kebenaran dan manfaatnya.</p>
+       </aside>
+      </div>
+      <div class="mt-2 grid md:grid-cols-2 gap-4 text-sm text-slate-100">
+       <div class="space-y-2">
+        <h3 class="font-semibold text-emerald-300">Latihan Refleksi</h3>
+        <p class="text-xs leading-relaxed">Tuliskan satu kejadian di mana kamu pernah percaya informasi yang ternyata salah. Apa pelajaran yang bisa kamu ambil agar lebih kritis ke depannya?</p>
+       </div>
+       <div class="space-y-2">
+        <h3 class="font-semibold text-emerald-300">Tips Praktis di Sekolah</h3>
+        <ul class="list-disc list-inside text-xs space-y-1">
+         <li>Mencatat dalil atau sumber saat guru menjelaskan.</li>
+         <li>Bertanya dengan sopan saat ada hal yang belum dipahami.</li>
+         <li>Menganalisa kasus nyata (misalnya penggunaan media sosial) dengan kacamata Islam.</li>
+        </ul>
+       </div>
+      </div>
+     </div>
+    </section><!-- SECTION: CINTA IPTEK -->
+    <section data-tab-section="iptek" class="w-full hidden" aria-labelledby="section-iptek-title">
+     <div id="iptek-card" class="w-full rounded-2xl border border-slate-900 shadow-lg px-6 py-5 flex flex-col gap-4">
+      <div class="flex flex-col md:flex-row gap-4">
+       <div class="flex-1">
+        <h2 id="section-iptek-title" class="text-lg font-semibold text-slate-50 mb-2">Semangat Mencintai IPTEK</h2>
+        <p class="text-sm text-slate-200 leading-relaxed mb-3">IPTEK (Ilmu Pengetahuan dan Teknologi) adalah amanah Allah yang harus dimanfaatkan untuk kebaikan. Umat Islam terdahulu banyak melahirkan ilmuwan besar, seperti Al-Khawarizmi, Ibnu Sina, dan lainnya.</p>
+        <ul class="list-disc list-inside space-y-1 text-sm text-slate-100">
+         <li>Belajar IPTEK adalah bagian dari menuntut ilmu yang bernilai ibadah.</li>
+         <li>IPTEK harus diarahkan untuk kemaslahatan, bukan kerusakan.</li>
+         <li>Semangat inovasi harus disertai akhlak mulia.</li>
+        </ul>
+       </div><!-- Ilustrasi roket/IPTEK -->
+       <div class="w-full md:w-60 rounded-2xl bg-slate-900/60 p-4 flex flex-col items-center justify-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-sky-300" viewbox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 13 15 5a4 4 0 0 1 4 4l-8 8-4 1 1-4Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" /> <path d="M13 7a2 2 0 1 0 4 0 2 2 0 0 0-4 0Z" stroke="currentColor" stroke-width="1.5" /> <path d="M6 18 4 20M8 20l-2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+        </svg>
+        <p class="text-xs text-center text-slate-100 leading-relaxed">Seorang muslim yang cinta IPTEK akan menggunakan teknologi untuk dakwah, pendidikan, dan kebaikan sosial.</p>
+       </div>
+      </div>
+      <div class="grid md:grid-cols-3 gap-4 text-xs text-slate-100 mt-2">
+       <div class="space-y-2">
+        <h3 class="font-semibold text-emerald-300">Contoh Sikap Positif</h3>
+        <ul class="list-disc list-inside space-y-1">
+         <li>Memanfaatkan internet untuk belajar dan mencari ilmu.</li>
+         <li>Membuat konten bermanfaat di media sosial.</li>
+         <li>Mengikuti lomba inovasi atau karya ilmiah.</li>
+        </ul>
+       </div>
+       <div class="space-y-2">
+        <h3 class="font-semibold text-emerald-300">Sikap yang Perlu Dihindari</h3>
+        <ul class="list-disc list-inside space-y-1">
+         <li>Menggunakan teknologi untuk maksiat atau bullying.</li>
+         <li>Kecanduan game hingga melalaikan shalat.</li>
+         <li>Mencontek lewat HP saat ujian.</li>
+        </ul>
+       </div>
+       <div class="space-y-2">
+        <h3 class="font-semibold text-emerald-300">Tugas Mini</h3>
+        <p class="leading-relaxed">Rancang ide sederhana pemanfaatan teknologi di sekolahmu yang bisa mendukung ibadah atau akhlak baik. Misal: pengingat adzan di mushola, konten dakwah kreatif, dan sebagainya.</p>
+       </div>
+      </div>
+     </div>
+    </section><!-- SECTION: KUIS -->
+    <section data-tab-section="quiz" class="w-full hidden" aria-labelledby="quiz-title">
+     <div id="quiz-card" class="w-full rounded-2xl border border-slate-900 shadow-lg px-6 py-5 flex flex-col gap-4">
+      <div class="flex flex-col md:flex-row md:items-center gap-3">
+       <h2 id="quiz-title" class="text-lg font-semibold text-slate-50">Kuis Interaktif</h2>
+       <p class="text-xs text-slate-300">Jawab pertanyaan berikut untuk mengukur pemahamanmu. Pilih satu jawaban yang paling tepat.</p>
+      </div>
+      <form id="quiz-form" class="space-y-4" aria-describedby="quiz-result"><!-- Soal 1 -->
+       <fieldset class="space-y-2"><legend class="text-sm font-semibold text-emerald-300"> 1. Yang dimaksud berpikir kritis dalam Islam adalah... </legend>
+        <div class="flex flex-col gap-1 text-sm text-slate-100"><label class="inline-flex items-center gap-2"> <input id="q1a" type="radio" name="q1" value="a" class="rounded border-slate-500 text-emerald-400 focus:ring-emerald-400"> <span for="q1a">Selalu membantah pendapat orang lain.</span> </label> <label class="inline-flex items-center gap-2"> <input id="q1b" type="radio" name="q1" value="b" class="rounded border-slate-500 text-emerald-400 focus:ring-emerald-400"> <span for="q1b">Menganalisa dan menilai sesuatu berdasarkan dalil dan akal sehat.</span> </label> <label class="inline-flex items-center gap-2"> <input id="q1c" type="radio" name="q1" value="c" class="rounded border-slate-500 text-emerald-400 focus:ring-emerald-400"> <span for="q1c">Mengikuti tren tanpa mempertimbangkan baik-buruknya.</span> </label>
+        </div>
+       </fieldset><!-- Soal 2 -->
+       <fieldset class="space-y-2"><legend class="text-sm font-semibold text-emerald-300"> 2. Belajar IPTEK akan bernilai ibadah jika... </legend>
+        <div class="flex flex-col gap-1 text-sm text-slate-100"><label class="inline-flex items-center gap-2"> <input id="q2a" type="radio" name="q2" value="a" class="rounded border-slate-500 text-emerald-400 focus:ring-emerald-400"> <span for="q2a">Diniatkan untuk mencari ridha Allah dan kemaslahatan.</span> </label> <label class="inline-flex items-center gap-2"> <input id="q2b" type="radio" name="q2" value="b" class="rounded border-slate-500 text-emerald-400 focus:ring-emerald-400"> <span for="q2b">Hanya untuk terkenal dan dipuji orang.</span> </label> <label class="inline-flex items-center gap-2"> <input id="q2c" type="radio" name="q2" value="c" class="rounded border-slate-500 text-emerald-400 focus:ring-emerald-400"> <span for="q2c">Agar bisa menyontek dengan mudah saat ujian.</span> </label>
+        </div>
+       </fieldset><!-- Soal 3 -->
+       <fieldset class="space-y-2"><legend class="text-sm font-semibold text-emerald-300"> 3. Contoh sikap kritis yang baik di sekolah adalah... </legend>
+        <div class="flex flex-col gap-1 text-sm text-slate-100"><label class="inline-flex items-center gap-2"> <input id="q3a" type="radio" name="q3" value="a" class="rounded border-slate-500 text-emerald-400 focus:ring-emerald-400"> <span for="q3a">Membantah guru dengan nada tinggi.</span> </label> <label class="inline-flex items-center gap-2"> <input id="q3b" type="radio" name="q3" value="b" class="rounded border-slate-500 text-emerald-400 focus:ring-emerald-400"> <span for="q3b">Diam saja meskipun tidak paham.</span> </label> <label class="inline-flex items-center gap-2"> <input id="q3c" type="radio" name="q3" value="c" class="rounded border-slate-500 text-emerald-400 focus:ring-emerald-400"> <span for="q3c">Bertanya dengan sopan ketika ada hal yang belum jelas.</span> </label>
+        </div>
+       </fieldset><!-- Soal 4 -->
+       <fieldset class="space-y-2"><legend class="text-sm font-semibold text-emerald-300"> 4. Berikut ini yang menunjukkan semangat mencintai IPTEK adalah... </legend>
+        <div class="flex flex-col gap-1 text-sm text-slate-100"><label class="inline-flex items-center gap-2"> <input id="q4a" type="radio" name="q4" value="a" class="rounded border-slate-500 text-emerald-400 focus:ring-emerald-400"> <span for="q4a">Menggunakan HP hanya untuk bermain game.</span> </label> <label class="inline-flex items-center gap-2"> <input id="q4b" type="radio" name="q4" value="b" class="rounded border-slate-500 text-emerald-400 focus:ring-emerald-400"> <span for="q4b">Mengikuti pelatihan teknologi dan membuat karya inovatif.</span> </label> <label class="inline-flex items-center gap-2"> <input id="q4c" type="radio" name="q4" value="c" class="rounded border-slate-500 text-emerald-400 focus:ring-emerald-400"> <span for="q4c">Menghindari belajar karena merasa sudah cukup pintar.</span> </label>
+        </div>
+       </fieldset>
+       <div class="flex flex-wrap items-center gap-3 pt-1"><button type="submit" data-btn="primary" class="px-4 py-2 rounded-full text-sm font-semibold shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"> Cek Jawaban </button>
+        <p class="text-xs text-slate-300">Setelah menekan tombol, skor dan umpan balik akan muncul di bawah ini.</p>
+       </div>
+      </form>
+      <div id="quiz-result" class="mt-3 text-sm text-slate-100"></div>
+      <div id="quiz-summary" class="mt-1 text-xs text-slate-100"></div>
+     </div>
+    </section><!-- SECTION: RANGKUMAN -->
+    <section data-tab-section="summary" class="w-full hidden" aria-labelledby="summary-title">
+     <div id="summary-card" class="w-full rounded-2xl border border-slate-900 shadow-lg px-6 py-5 flex flex-col gap-4">
+      <h2 id="summary-title" class="text-lg font-semibold text-slate-50">Rangkuman &amp; Refleksi</h2>
+      <div class="grid md:grid-cols-2 gap-4 text-sm text-slate-100">
+       <div class="space-y-2">
+        <h3 class="font-semibold text-emerald-300">Rangkuman</h3>
+        <ul class="list-disc list-inside space-y-1 text-xs leading-relaxed">
+         <li>Islam mendorong umatnya untuk berpikir kritis dengan tetap berpegang pada Al-Qur’an dan Sunnah.</li>
+         <li>Berpikir kritis berarti menganalisa, menilai, dan mengambil keputusan berdasarkan ilmu dan dalil yang kuat.</li>
+         <li>IPTEK adalah amanah Allah yang harus dimanfaatkan untuk kebaikan dan kemaslahatan.</li>
+         <li>Semangat mencintai IPTEK ditunjukkan dengan rajin belajar, berinovasi, dan menjauhi penyalahgunaan teknologi.</li>
+        </ul>
+       </div>
+       <div class="space-y-2">
+        <h3 class="font-semibold text-emerald-300">Refleksi Pribadi</h3>
+        <p class="text-xs leading-relaxed">Renungkan:</p>
+        <ol class="list-decimal list-inside text-xs leading-relaxed space-y-1">
+         <li>Sudahkah aku memeriksa kebenaran informasi sebelum menyebarkannya?</li>
+         <li>Bagaimana cara aku menggunakan HP, internet, dan media sosial selama ini?</li>
+         <li>Langkah kecil apa yang bisa aku mulai hari ini untuk lebih kritis dan cinta IPTEK karena Allah?</li>
+        </ol>
+        <p class="text-xs leading-relaxed mt-1">Kamu bisa menuliskan jawaban refleksi ini di buku catatan PAI, lalu diskusikan bersama guru atau teman kelompokmu.</p>
+       </div>
+      </div>
+     </div>
+    </section>
+   </main>
+   <footer class="w-full max-w-5xl mx-auto mt-4 pt-3 border-t border-slate-800">
+    <p id="footer-text" class="text-xs text-slate-400 text-center">PAI Kelas XI SMK • Materi: Berpikir Kritis &amp; Cinta IPTEK</p>
+   </footer>
+  </div>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a63ba0844ea71ba',t:'MTc2NDQzNjMxMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
